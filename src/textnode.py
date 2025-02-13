@@ -3,9 +3,14 @@ from enum import Enum
 
 class TextType(Enum):
     TEXT = "TEXT"
+    PARAGRAPH = "PARAGRAPH"
+    HEADING = "HEADING"
+    QUOTE = "QUOTE"
+    CODE = "CODE"
+    UNORDERED_LIST = "UNORDERED_LIST"
+    ORDERED_LIST = "ORDERED_LIST"
     BOLD = "BOLD"
     ITALIC = "ITALIC"
-    CODE = "CODE"
     LINK = "LINK"
     IMAGE = "IMAGE"
 

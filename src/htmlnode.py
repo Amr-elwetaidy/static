@@ -12,7 +12,7 @@ class HTMLNode:
         self.props: dict | None = props
 
     def to_html(self) -> str:
-        raise NotImplementedError
+        raise NotImplementedError("to_html method not implemented")
 
     def props_to_html(self) -> str:
         if self.props is None:
@@ -20,7 +20,7 @@ class HTMLNode:
         return " ".join([f"{k}='{v}'" for k, v in self.props.items()])
 
     def __repr__(self) -> str:
-        return f"HTMLNode(tag={self.tag}, value={self.value}, children={self.children}, props={self.props})"
+        return f"HTMLNode({self.tag}, {self.value}, children: {self.children}, {self.props})"
 
 
 class LeafNode(HTMLNode):
@@ -29,10 +29,13 @@ class LeafNode(HTMLNode):
 
     def to_html(self) -> str:
         if self.value is None:
-            raise ValueError("Value is required for leaf nodes")
+            raise ValueError("invalid HTML: no value")
         if self.tag is None:
             return self.value
         return f"<{self.tag}{' ' if self.props else ''}{self.props_to_html()}>{self.value}</{self.tag}>"
+
+    def __repr__(self):
+        return f"LeafNode({self.tag}, {self.value}, {self.props})"
 
 
 class ParentNode(HTMLNode):
@@ -41,11 +44,13 @@ class ParentNode(HTMLNode):
 
     def to_html(self) -> str:
         if self.tag is None:
-            raise ValueError("Tag is required for parent nodes")
+            raise ValueError("invalid HTML: no tag")
         if not self.children:
-            raise ValueError("Children are required for parent nodes")
-        return (
-            f"<{self.tag}{' ' if self.props else ''}{self.props_to_html()}>"
-            f"{''.join([child.to_html() for child in self.children])}"
-            f"</{self.tag}>"
-        )
+            raise ValueError("invalid HTML: no children")
+        children_html = ""
+        for child in self.children:
+            children_html += child.to_html()
+        return f"<{self.tag}{self.props_to_html()}>{children_html}</{self.tag}>"
+
+    def __repr__(self):
+        return f"ParentNode({self.tag}, children: {self.children}, {self.props})"

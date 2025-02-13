@@ -17,7 +17,7 @@ class TestHTMLNode(unittest.TestCase):
         node = HTMLNode("div", "Hello, world!", props={"class": "test"})
         self.assertEqual(
             repr(node),
-            "HTMLNode(tag=div, value=Hello, world!, children=None, props={'class': 'test'})",
+            "HTMLNode(div, Hello, world!, children: None, {'class': 'test'})",
         )
 
     def test_leaf_node_no_children(self):
@@ -31,7 +31,7 @@ class TestHTMLNode(unittest.TestCase):
     def test_leaf_node_repr(self):
         node = LeafNode("div", "Hello, world!")
         self.assertEqual(
-            repr(node), "HTMLNode(tag=div, value=Hello, world!, children=None, props=None)"
+            repr(node), "LeafNode(div, Hello, world!, None)"
         )
 
     def test_parent_node_no_children(self):

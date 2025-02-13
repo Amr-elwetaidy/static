@@ -59,6 +59,17 @@ class TestHelpers(unittest.TestCase):
         self.assertEqual(helpers.block_to_block_type("* This is a list item"), "unordered_list")
         self.assertEqual(helpers.block_to_block_type("1. This is a list item"), "ordered_list")
 
+    def test_extract_title(self):
+        self.assertEqual(helpers.extract_title("# This is a heading"), "This is a heading")
+
+    def test_extract_title_no_title(self):
+        with self.assertRaises(ValueError):
+            helpers.extract_title("This is a paragraph")
+
+    def test_extract_title_multiple_hashes_no_title(self):
+        with self.assertRaises(ValueError):
+            helpers.extract_title("## This is a paragraph")
+
 
 if __name__ == "__main__":
     unittest.main()

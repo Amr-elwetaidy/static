@@ -1,6 +1,7 @@
 import re
 from typing import Any
 
+from src.htmlnode import LeafNode, ParentNode
 from src.textnode import TextNode, TextType
 
 
@@ -106,7 +107,7 @@ def block_to_block_type(block: str) -> str:
         return "quote"
 
     for line in lines:
-        if not line[0] in ["*", "-", "+"]:
+        if not line[:2] in ["* ", "- ", "+ "]:
             break
     else:
         return "unordered_list"
@@ -118,3 +119,113 @@ def block_to_block_type(block: str) -> str:
         return "ordered_list"
 
     return "paragraph"
+
+
+def extract_title(markdown: str) -> str:
+    try:
+        return re.match(r"^#\s+(.*)", markdown).group(1)
+    except AttributeError:
+        raise ValueError("No title found")
+
+
+def text_to_children(text):
+    text_nodes = text_to_textnodes(text)
+    children = []
+    for text_node in text_nodes:
+        html_node = text_node_to_html_node(text_node)
+        children.append(html_node)
+    return children
+
+
+def text_node_to_html_node(text_node: TextNode) -> LeafNode:
+    match text_node.text_type:
+        case TextType.TEXT:
+            return LeafNode(None, text_node.text)
+        case TextType.BOLD:
+            return LeafNode("b", text_node.text)
+        case TextType.ITALIC:
+            return LeafNode("i", text_node.text)
+        case TextType.CODE:
+            return LeafNode("code", text_node.text)
+        case TextType.LINK:
+            return LeafNode("a", text_node.text, {"href": text_node.url})
+        case TextType.IMAGE:
+            return LeafNode("img", "", {"src": text_node.url, "alt": text_node.text})
+        case _:
+            raise ValueError(f"Unknown text type: {text_node.text_type}")
+
+
+def text_to_textnodes(text: str) -> list[TextNode]:
+    delimiters = [
+        (r"\*\*", TextType.BOLD),
+        (r"\*", TextType.ITALIC),
+        (r"`", TextType.CODE),
+    ]
+    nodes = [TextNode(text, TextType.TEXT)]
+    for delimiter, text_type in delimiters:
+        nodes = split_nodes_delimiter(nodes, delimiter, text_type)
+    nodes = split_nodes_image(nodes)
+    nodes = split_nodes_link(nodes)
+    return nodes
+
+
+def paragraph_to_html_node(block):
+    lines = block.split("\n")
+    paragraph = " ".join(lines)
+    children = text_to_children(paragraph)
+    return ParentNode("p", children)
+
+
+def heading_to_html_node(block):
+    level = 0
+    for char in block:
+        if char == "#":
+            level += 1
+        else:
+            break
+    if level + 1 >= len(block):
+        raise ValueError(f"invalid heading level: {level}")
+    text = block[level + 1 :]
+    children = text_to_children(text)
+    return ParentNode(f"h{level}", children)
+
+
+def code_to_html_node(block):
+    if not block.startswith("```") or not block.endswith("```"):
+        raise ValueError("invalid code block")
+    text = block[4:-3]
+    children = text_to_children(text)
+    code = ParentNode("code", children)
+    return ParentNode("pre", [code])
+
+
+def olist_to_html_node(block):
+    items = block.split("\n")
+    html_items = []
+    for item in items:
+        text = item[3:]
+        children = text_to_children(text)
+        html_items.append(ParentNode("li", children))
+    return ParentNode("ol", html_items)
+
+
+def ulist_to_html_node(block):
+    items = block.split("\n")
+    html_items = []
+    for item in items:
+        text = item[2:]
+        children = text_to_children(text)
+        html_items.append(ParentNode("li", children))
+    return ParentNode("ul", html_items)
+
+
+def quote_to_html_node(block):
+    lines = block.split("\n")
+    new_lines = []
+    for line in lines:
+        if not line.startswith(">"):
+            raise ValueError("invalid quote block")
+        new_lines.append(line.lstrip(">").strip())
+    content = " ".join(new_lines)
+    children = text_to_children(content)
+    return ParentNode("blockquote", children)
