@@ -1,10 +1,9 @@
 import glob
 import os
-import re
 import shutil
 
-from src import helpers
-from src.htmlnode import ParentNode
+import helpers
+from htmlnode import ParentNode
 
 
 def markdown_to_html_node(markdown: str) -> ParentNode:

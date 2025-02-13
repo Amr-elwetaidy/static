@@ -1,7 +1,7 @@
 import unittest
 
-from src import helpers
-from src.textnode import TextNode, TextType
+import helpers
+from textnode import TextNode, TextType
 
 
 class TestHelpers(unittest.TestCase):

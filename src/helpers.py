@@ -1,8 +1,8 @@
 import re
 from typing import Any
 
-from src.htmlnode import LeafNode, ParentNode
-from src.textnode import TextNode, TextType
+from htmlnode import LeafNode, ParentNode
+from textnode import TextNode, TextType
 
 
 def validate_node(node: TextNode | Any, nodes: list[TextNode]):
